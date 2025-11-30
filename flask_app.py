@@ -1,6 +1,6 @@
 """
 Flask Web Application for Two-Wheeler Traffic Violation Detection
-Matching UI with Four-Wheeler System
+Tesseract-only version for Railway deployment
 """
 
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
@@ -12,7 +12,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Import from your existing app.py
-from app import SimplifiedTrafficViolationDetector, TESSERACT_AVAILABLE, EASYOCR_AVAILABLE
+from app import SimplifiedTrafficViolationDetector, TESSERACT_AVAILABLE
 import sqlite3
 from datetime import datetime
 from collections import defaultdict
@@ -83,7 +83,7 @@ def index():
     """Home page"""
     return render_template('index.html', 
                          TESSERACT_AVAILABLE=TESSERACT_AVAILABLE,
-                         EASYOCR_AVAILABLE=EASYOCR_AVAILABLE,
+                         EASYOCR_AVAILABLE=False,  # Disabled for Railway
                          MODELS_AVAILABLE=True)
 
 @app.route('/upload', methods=['GET', 'POST'])
@@ -167,7 +167,6 @@ def demo():
 @app.route('/run_demo', methods=['POST'])
 def run_demo():
     """Run demo with sample video"""
-    # Check if demo video exists
     demo_video = 'demo_video.mp4'
     demo_path = os.path.join(app.config['UPLOAD_FOLDER'], demo_video)
     
@@ -183,7 +182,6 @@ def run_demo():
         report = detector.process_video(demo_path, output_path)
         
         if report:
-            # Save violations to database
             for violation in report['violations']:
                 save_violation_to_db(violation, demo_video)
             
@@ -243,13 +241,15 @@ def clear_database():
 if __name__ == '__main__':
     print("\n" + "="*70)
     print("🏍️  TWO-WHEELER TRAFFIC VIOLATION DETECTION SYSTEM")
+    print("📦 Tesseract-only version (Railway optimized)")
     print("="*70)
     print("\n✅ Server starting...")
-    print("📍 Access the application at: http://127.0.0.1:3000")
+    
+    # Get port from environment variable (Railway provides this)
+    port = int(os.environ.get('PORT', 3000))
+    
+    print(f"🌐 Access the application at: http://127.0.0.1:{port}")
     print("📁 Make sure 'templates' folder contains all HTML files")
     print("\n" + "="*70 + "\n")
     
-    port = int(os.environ.get('PORT', 3000))
     app.run(debug=False, host='0.0.0.0', port=port)
-
-    
