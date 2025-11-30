@@ -1,0 +1,43 @@
+{
+    "input": "C:\\Users\\Vishal kumar\\PYTHON TEST\\HELMET\\5207049-uhd_2160_3840_25fps.mp4",
+    "output": "output_video.mp4",
+    "timestamp": "2025-11-16 22:25:49",
+    "video_info": {
+        "duration": 29.04,
+        "fps": 1,
+        "processed_frames": 30
+    },
+    "total_unique_violations": 1,
+    "violations_by_type": {
+        "000_NO_HELMET": 1
+    },
+    "violations": [
+        {
+            "type": "NO_HELMET",
+            "frame": 0,
+            "timestamp": 0.0,
+            "plate_number": "BIKE_000",
+            "confidence": 0.6582311391830444,
+            "details": "1 rider(s) without helmet (conf: 0.66)",
+            "evidence_file": "NO_HELMET_BIKE_000_20251116_215003.jpg"
+        },
+        {
+            "type": "NO_HELMET",
+            "frame": 10,
+            "timestamp": 10.0,
+            "plate_number": "BIKE_000",
+            "confidence": 0.7784865498542786,
+            "details": "1 rider(s) without helmet (conf: 0.78)",
+            "evidence_file": "NO_HELMET_BIKE_000_20251116_215003.jpg"
+        },
+        {
+            "type": "NO_HELMET",
+            "frame": 17,
+            "timestamp": 17.0,
+            "plate_number": "BIKE_000",
+            "confidence": 0.4596949815750122,
+            "details": "1 rider(s) without helmet (conf: 0.46)",
+            "evidence_file": "NO_HELMET_BIKE_000_20251116_215003.jpg"
+        }
+    ]
+}

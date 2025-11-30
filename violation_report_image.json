@@ -1,0 +1,26 @@
+{
+    "input": "C:\\Users\\Vishal kumar\\PYTHON TEST\\HELMET\\Screenshot 2025-11-17 030634.png",
+    "output": "output_image.jpg",
+    "timestamp": "2025-11-17 11:18:07",
+    "total_violations": 2,
+    "violations": [
+        {
+            "type": "NO_HELMET",
+            "frame": 0,
+            "timestamp": 0.0,
+            "plate_number": "BIKE_000",
+            "confidence": 0.7929192185401917,
+            "details": "1 rider(s) without helmet (conf: 0.79)",
+            "evidence_file": "NO_HELMET_BIKE_000_20251117_111807.jpg"
+        },
+        {
+            "type": "NO_HELMET",
+            "frame": 0,
+            "timestamp": 0.0,
+            "plate_number": "BIKE_001",
+            "confidence": 0.7929192185401917,
+            "details": "2 rider(s) without helmet (conf: 0.79)",
+            "evidence_file": "NO_HELMET_BIKE_001_20251117_111807.jpg"
+        }
+    ]
+}
