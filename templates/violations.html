@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1>Violation Records</h1>
+                <p class="text-muted mb-0">Complete history of detected traffic violations</p>
+            </div>
+            <div>
+                <span class="badge bg-primary" style="font-size: 1.1rem; padding: 0.5rem 1rem;">
+                    Total: {{ violations|length }} violations
+                </span>
+            </div>
+        </div>
+        
+        {% if violations %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-table"></i>All Violations
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">ID</th>
+                                <th style="width: 180px;">Timestamp</th>
+                                <th>Plate Number</th>
+                                <th>Violation Type</th>
+                                <th style="width: 120px;">Confidence</th>
+                                <th>Details</th>
+                                <th>Video Source</th>
+                                <th style="width: 100px;">Evidence</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for v in violations %}
+                            <tr>
+                                <td><strong>#{{ v.id }}</strong></td>
+                                <td><small>{{ v.timestamp }}</small></td>
+                                <td>
+                                    <span class="badge bg-dark">{{ v.plate_number }}</span>
+                                </td>
+                                <td>
+                                    {% if v.violation_type == 'NO_HELMET' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times-circle"></i> No Helmet
+                                        </span>
+                                    {% elif v.violation_type == 'TRIPLE_RIDING' %}
+                                        <span class="badge bg-warning text-dark">
+                                            <i class="fas fa-users"></i> Triple Riding
+                                        </span>
+                                    {% elif v.violation_type == 'RED_LIGHT_VIOLATION' %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-traffic-light"></i> Red Light
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ (v.confidence * 100)|round }}%"
+                                             aria-valuenow="{{ (v.confidence * 100)|round }}" 
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            {{ "%.0f"|format(v.confidence * 100) }}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><small class="text-muted">{{ v.details }}</small></td>
+                                <td><small class="text-muted">{{ v.video_source }}</small></td>
+                                <td>
+                                    {% if v.evidence_file %}
+                                        <a href="/evidence/{{ v.evidence_file }}" target="_blank" 
+                                           class="btn btn-sm btn-primary">
+                                            <i class="fas fa-image"></i> View
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex">
+            <a href="/" class="btn btn-primary">
+                <i class="fas fa-home me-2"></i>Back to Home
+            </a>
+            <a href="/upload" class="btn btn-success">
+                <i class="fas fa-upload me-2"></i>Upload New File
+            </a>
+            <form method="POST" action="/clear_database" style="display: inline;">
+                <button type="submit" class="btn btn-danger" 
+                        onclick="return confirm('Are you sure you want to clear all violations? This action cannot be undone.')">
+                    <i class="fas fa-trash me-2"></i>Clear All Violations
+                </button>
+            </form>
+        </div>
+        
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                <h4>No Violations Found</h4>
+                <p class="text-muted">No violation records found in the database. Start by uploading a video or running the demo.</p>
+                <div class="mt-4">
+                    <a href="/upload" class="btn btn-primary me-2">
+                        <i class="fas fa-upload me-2"></i>Upload Video
+                    </a>
+                    <form method="POST" action="/run_demo" style="display: inline;">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-play me-2"></i>Run Demo
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

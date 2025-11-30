@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="mb-4">
+            <h1>Upload Traffic Video or Image</h1>
+            <p class="text-muted">Upload your traffic footage to detect violations automatically</p>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-cloud-upload-alt"></i>Select File to Process
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Choose Video or Image File</label>
+                        <input class="form-control form-control-lg" type="file" name="file" accept="video/*,image/*" required>
+                        <div class="form-text mt-2">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Supported formats:</strong>
+                            <ul class="mt-2 mb-0">
+                                <li>Videos: MP4, AVI, MOV, MKV, WebM</li>
+                                <li>Images: JPG, JPEG, PNG</li>
+                                <li>Maximum file size: 500MB</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <h6 class="alert-heading"><i class="fas fa-search"></i> Detection Capabilities</h6>
+                        <ul class="mb-0">
+                            <li>Helmet violations</li>
+                            <li>Triple riding detection</li>
+                            <li>Red light violations</li>
+                            <li>License plate recognition (OCR)</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-upload me-2"></i>Upload and Process
+                        </button>
+                        <a href="/" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h6><i class="fas fa-lightbulb text-warning"></i> Tips for Best Results</h6>
+                <ul class="mb-0 text-muted">
+                    <li>Use high-resolution videos (720p or higher)</li>
+                    <li>Ensure good lighting conditions</li>
+                    <li>Videos should have clear view of traffic signals</li>
+                    <li>License plates should be visible</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

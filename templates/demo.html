@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="mb-4">
+            <h1>Demo - Traffic Violation Detection</h1>
+            <p class="text-muted">Test the system with a pre-loaded demo video</p>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <i class="fas fa-play-circle"></i>Run Demo Video
+            </div>
+            <div class="card-body">
+                <p class="lead">Test the detection system with our sample traffic video to see all features in action.</p>
+                
+                <div class="alert alert-info">
+                    <h6 class="alert-heading"><i class="fas fa-search"></i> Demo will detect:</h6>
+                    <ul class="mb-0">
+                        <li><i class="fas fa-check text-success"></i> Helmet violations</li>
+                        <li><i class="fas fa-check text-success"></i> Triple riding violations</li>
+                        <li><i class="fas fa-check text-success"></i> Red light violations</li>
+                        <li><i class="fas fa-check text-success"></i> License plate numbers (OCR)</li>
+                    </ul>
+                </div>
+
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h6><i class="fas fa-info-circle text-primary"></i> How it works:</h6>
+                        <ol class="mb-0">
+                            <li>Click the "Run Demo" button below</li>
+                            <li>The system processes the pre-loaded demo video</li>
+                            <li>AI models detect violations in real-time</li>
+                            <li>Results are saved to the database</li>
+                            <li>You can download the processed video with annotations</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <form method="POST" action="/run_demo">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-play me-2"></i>Run Demo
+                        </button>
+                        <a href="/" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Home
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-cogs"></i>System Information
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-brain text-primary"></i> Detection Features:</h6>
+                        <ul>
+                            <li><strong>Helmet Detection:</strong> AI-powered detection of riders without helmets</li>
+                            <li><strong>Triple Riding:</strong> Identifies bikes carrying more than 2 passengers</li>
+                            <li><strong>Red Light Violations:</strong> Detects vehicles crossing red signals</li>
+                            <li><strong>License Plate OCR:</strong> Reads and extracts plate numbers</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-code text-success"></i> Technologies Used:</h6>
+                        <ul>
+                            <li><i class="fab fa-python"></i> Python + Flask</li>
+                            <li><i class="fas fa-video"></i> OpenCV for video processing</li>
+                            <li><i class="fas fa-robot"></i> Roboflow AI models</li>
+                            <li><i class="fas fa-font"></i> Tesseract + EasyOCR for plate reading</li>
+                            <li><i class="fas fa-database"></i> SQLite database</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

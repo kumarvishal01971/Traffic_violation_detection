@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero-section">
+    <h1>Traffic Violation Detection System</h1>
+    <p>Advanced AI-powered system to automatically detect red light violations with real-time processing and analytics.</p>
+    
+    <div class="d-flex gap-3">
+        <form method="GET" action="/upload" style="display: inline;">
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-upload me-2"></i>Upload Video
+            </button>
+        </form>
+        <form method="POST" action="/run_demo" style="display: inline;">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-play me-2"></i>Run Demo
+            </button>
+        </form>
+        <form method="GET" action="/violations" style="display: inline;">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-list me-2"></i>View Violations
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-7 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-star"></i>System Features
+            </div>
+            <div class="card-body">
+                <div class="feature-item">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-traffic-light"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Traffic Light Detection</h6>
+                        <small class="text-muted">Advanced detection of signal violations in real-time</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon green">
+                        <i class="fas fa-car"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">YOLO Vehicle Detection</h6>
+                        <small class="text-muted">Precise bounding box detection with high accuracy</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon purple">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">License Plate OCR</h6>
+                        <small class="text-muted">Dual OCR engine with Tesseract & EasyOCR</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon orange">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Live Violation Tracking</h6>
+                        <small class="text-muted">Real-time logging and alerting system</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon blue">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Database Storage</h6>
+                        <small class="text-muted">Automated storage and retrieval of all records</small>
+                    </div>
+                </div>
+
+                <div class="feature-item">
+                    <div class="feature-icon green">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Analytics Dashboard</h6>
+                        <small class="text-muted">Comprehensive reporting and insights</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-server"></i>System Status
+            </div>
+            <div class="card-body">
+                <div class="status-item">
+                    <span><strong>Flask Server</strong></span>
+                    <span class="status-badge running">Running</span>
+                </div>
+                <div class="status-item">
+                    <span><strong>OpenCV</strong></span>
+                    <span class="status-badge loaded">Loaded</span>
+                </div>
+                <div class="status-item">
+                    <span><strong>YOLO Model</strong></span>
+                    <span class="status-badge {% if MODELS_AVAILABLE %}available{% else %}unavailable{% endif %}">
+                        {% if MODELS_AVAILABLE %}Available{% else %}Unavailable{% endif %}
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span><strong>Tesseract OCR</strong></span>
+                    <span class="status-badge {% if TESSERACT_AVAILABLE %}available{% else %}unavailable{% endif %}">
+                        {% if TESSERACT_AVAILABLE %}Available{% else %}Unavailable{% endif %}
+                    </span>
+                </div>
+                <div class="status-item">
+                    <span><strong>EasyOCR</strong></span>
+                    <span class="status-badge {% if EASYOCR_AVAILABLE %}available{% else %}unavailable{% endif %}">
+                        {% if EASYOCR_AVAILABLE %}Available{% else %}Unavailable{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center mt-4">
+    <p class="text-muted mb-3">Need to reset the system? This will clear all violation records.</p>
+    <form method="POST" action="/clear_database" style="display: inline;">
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to clear all violations?')">
+            <i class="fas fa-trash me-2"></i>Clear Database
+        </button>
+    </form>
+</div>
+{% endblock %}

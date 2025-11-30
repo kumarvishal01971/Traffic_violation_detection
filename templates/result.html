@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card border-success" style="border-width: 2px;">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0"><i class="fas fa-check-circle me-2"></i>Processing Complete</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-check-circle fa-3x me-3"></i>
+                        <div>
+                            <h5 class="alert-heading mb-2">✅ File Processing Finished!</h5>
+                            <p class="mb-0">Successfully detected <strong>{{ total_violations }}</strong> violation(s) in the uploaded file.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    {% if plates %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-id-card text-primary"></i> Detected License Plates
+                                </h5>
+                                <div class="mt-3">
+                                    {% for plate in plates %}
+                                    <span class="badge bg-dark mb-2" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                                        {{ plate }}
+                                    </span>
+                                    {% endfor %}
+                                </div>
+                                <p class="text-muted mt-3 mb-0">
+                                    <small><i class="fas fa-info-circle"></i> Total unique plates: {{ plates|length }}</small>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if violation_breakdown %}
+                    <div class="col-md-{% if plates %}6{% else %}12{% endif %} mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">
+                                    <i class="fas fa-chart-pie text-danger"></i> Violation Breakdown
+                                </h5>
+                                <ul class="list-group list-group-flush mt-3">
+                                    {% if violation_breakdown.NO_HELMET %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="fas fa-times-circle text-danger"></i> No Helmet
+                                        </span>
+                                        <span class="badge bg-danger rounded-pill">{{ violation_breakdown.NO_HELMET }}</span>
+                                    </li>
+                                    {% endif %}
+                                    {% if violation_breakdown.TRIPLE_RIDING %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="fas fa-users text-warning"></i> Triple Riding
+                                        </span>
+                                        <span class="badge bg-warning text-dark rounded-pill">{{ violation_breakdown.TRIPLE_RIDING }}</span>
+                                    </li>
+                                    {% endif %}
+                                    {% if violation_breakdown.RED_LIGHT_VIOLATION %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <span>
+                                            <i class="fas fa-traffic-light text-info"></i> Red Light Violation
+                                        </span>
+                                        <span class="badge bg-info rounded-pill">{{ violation_breakdown.RED_LIGHT_VIOLATION }}</span>
+                                    </li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if not plates and not violation_breakdown %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No detailed violation information available.
+                </div>
+                {% endif %}
+
+                <div class="card mt-3">
+                    <div class="card-body bg-light">
+                        <h6><i class="fas fa-arrow-right text-primary"></i> Next Steps</h6>
+                        <div class="d-grid gap-2 d-md-flex mt-3">
+                            <a href="/download/{{ output_filename }}" class="btn btn-success btn-lg">
+                                <i class="fas fa-download me-2"></i>Download Processed File
+                            </a>
+                            <a href="/violations" class="btn btn-primary btn-lg">
+                                <i class="fas fa-list me-2"></i>View All Violations
+                            </a>
+                            <a href="/upload" class="btn btn-info btn-lg text-white">
+                                <i class="fas fa-upload me-2"></i>Process Another File
+                            </a>
+                            <a href="/" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-home me-2"></i>Back to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
