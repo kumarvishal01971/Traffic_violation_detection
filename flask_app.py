@@ -249,4 +249,7 @@ if __name__ == '__main__':
     print("📁 Make sure 'templates' folder contains all HTML files")
     print("\n" + "="*70 + "\n")
     
-    app.run(debug=True, host='0.0.0.0', port=3000)
+    port = int(os.environ.get('PORT', 3000))
+    app.run(debug=False, host='0.0.0.0', port=port)
+
+    
