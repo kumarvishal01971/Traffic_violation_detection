@@ -1,12 +1,8 @@
 """
-Fixed Traffic Violation Detection System
+Fixed Traffic Violation Detection System - Tesseract Only
 - ONE violation per frame per type (no duplicates on single image)
-- All 4 models active with correct class detection:
-  * two-wheeler-aj3hv/2: Detects bikes/motorcycles
-  * two-person-ride/11: Detects "No_Helmet" class
-  * more-than-two-passengers/1: Detects "people" class (= 3+ passengers)
-  * traffic-lights-ydbwt/1: Detects "0"=GREEN, "1"=RED
-- Direct trust in model predictions
+- All 4 models active with correct class detection
+- Lightweight for Railway deployment (no EasyOCR/torch)
 """
 
 import os
@@ -19,19 +15,13 @@ from datetime import datetime
 from collections import defaultdict
 from typing import List, Dict, Tuple, Optional
 
-# OCR Libraries
+# OCR Libraries - Tesseract Only
 try:
     import pytesseract
     TESSERACT_AVAILABLE = True
 except ImportError:
     TESSERACT_AVAILABLE = False
-
-try:
-    import easyocr
-    EASYOCR_AVAILABLE = True
-    reader = easyocr.Reader(['en'], gpu=False)
-except ImportError:
-    EASYOCR_AVAILABLE = False
+    print("⚠️ Warning: Tesseract not available")
 
 # Inference client
 try:
@@ -80,7 +70,7 @@ class SimpleViolationTracker:
 
 
 class SimplifiedTrafficViolationDetector:
-    """Fixed detector - ONE violation per frame, all models active"""
+    """Fixed detector - ONE violation per frame, all models active, Tesseract-only"""
 
     def __init__(self, api_key: str = "BJLvln2FsWwIwjDBpoMI"):
         self.api_key = api_key
@@ -124,48 +114,62 @@ class SimplifiedTrafficViolationDetector:
         self.evidence_folder = EVIDENCE_FOLDER
         self.tracker = SimpleViolationTracker(cooldown_seconds=5.0)
 
-        print("✅ Simplified Detector Initialized")
-        print(f"🔌 Tesseract: {'Available' if TESSERACT_AVAILABLE else 'Not Available'}")
-        print(f"🔌 EasyOCR: {'Available' if EASYOCR_AVAILABLE else 'Not Available'}")
+        print("✅ Simplified Detector Initialized (Tesseract-only)")
+        print(f"📌 Tesseract: {'Available' if TESSERACT_AVAILABLE else 'Not Available'}")
 
     def apply_ocr(self, image: np.ndarray) -> Optional[str]:
-        """Apply OCR to extract plate number"""
+        """Apply Tesseract OCR to extract plate number"""
         try:
             if image is None or image.size == 0:
                 return None
+            
+            # Convert to grayscale
             if len(image.shape) == 3:
                 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
             else:
                 gray = image
-            gray = cv2.resize(gray, None, fx=2.0, fy=2.0, interpolation=cv2.INTER_CUBIC)
+            
+            # Enhance image for better OCR
+            gray = cv2.resize(gray, None, fx=3.0, fy=3.0, interpolation=cv2.INTER_CUBIC)
             gray = cv2.GaussianBlur(gray, (3, 3), 0)
-            _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            
+            # Try adaptive threshold
+            binary = cv2.adaptiveThreshold(
+                gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2
+            )
 
             if TESSERACT_AVAILABLE:
                 try:
+                    # Try multiple Tesseract configurations
+                    configs = [
+                        '--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+                        '--psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+                        '--psm 6 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+                    ]
+                    
+                    for config in configs:
+                        text = pytesseract.image_to_string(binary, config=config)
+                        text = re.sub(r'[^A-Z0-9]', '', text.upper())
+                        if len(text) >= 4:
+                            return self.format_plate_text(text)
+                    
+                    # Try with OTSU threshold as fallback
+                    _, otsu = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
                     text = pytesseract.image_to_string(
-                        binary,
+                        otsu,
                         config='--psm 7 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
                     )
                     text = re.sub(r'[^A-Z0-9]', '', text.upper())
                     if len(text) >= 4:
                         return self.format_plate_text(text)
-                except Exception:
-                    pass
-
-            if EASYOCR_AVAILABLE:
-                try:
-                    results = reader.readtext(binary, detail=0, paragraph=False)
-                    if results:
-                        text = ''.join(results).upper()
-                        text = re.sub(r'[^A-Z0-9]', '', text)
-                        if len(text) >= 4:
-                            return self.format_plate_text(text)
-                except Exception:
+                        
+                except Exception as e:
+                    print(f"⚠️ Tesseract error: {e}")
                     pass
 
             return None
-        except Exception:
+        except Exception as e:
+            print(f"⚠️ OCR error: {e}")
             return None
 
     def format_plate_text(self, text: str) -> Optional[str]:
@@ -173,7 +177,7 @@ class SimplifiedTrafficViolationDetector:
         text = re.sub(r'[^A-Z0-9]', '', text.upper())
         if len(text) < 4 or len(text) > 12:
             return None
-        return f"{text[:2]} {text[2:]}"
+        return f"{text[:2]} {text[2:4]} {text[4:]}" if len(text) > 4 else text
 
     def extract_license_plate(self, frame: np.ndarray, bike_box: Dict) -> Tuple[Optional[np.ndarray], Optional[str]]:
         """Extract license plate from bike region"""
@@ -202,7 +206,7 @@ class SimplifiedTrafficViolationDetector:
                 except Exception:
                     pass
 
-            # Try bottom region
+            # Try bottom region of bike
             h_roi = bike_roi.shape[0]
             bottom_roi = bike_roi[int(h_roi * 0.6):, :]
             if bottom_roi.size > 0:
@@ -210,27 +214,26 @@ class SimplifiedTrafficViolationDetector:
                 if plate_text:
                     return bottom_roi, plate_text
 
+            # Try full bike region as last resort
+            plate_text = self.apply_ocr(bike_roi)
+            if plate_text:
+                return bike_roi, plate_text
+
             return None, None
-        except Exception:
+        except Exception as e:
+            print(f"⚠️ Plate extraction error: {e}")
             return None, None
 
     def analyze_frame_simple(self, predictions: List[Dict], frame: np.ndarray, frame_num: int) -> List[Dict]:
         """
-        Simple violation detection based on model predictions:
-        - If model says "No_Helmet" -> ONE violation per frame
-        - If model says "people" (more-than-two-passengers model) -> ONE violation per frame  
-        - If class="1" (red light from traffic light model) -> ONE violation per frame
+        Simple violation detection based on model predictions
         """
         violations = []
         
         # Extract different prediction types
         bikes = [p for p in predictions if p.get('confidence', 0) > self.confidence_thresholds['bike']]
         no_helmet_detections = [p for p in predictions if 'no' in p.get('class', '').lower() and 'helmet' in p.get('class', '').lower()]
-        
-        # Triple riding: "people" class from more-than-two-passengers model
         triple_detections = [p for p in predictions if p.get('class', '').lower() == 'people' and p.get('confidence', 0) > self.confidence_thresholds['triple']]
-        
-        # Red light: class="1" from traffic light model
         red_light_detections = [p for p in predictions if p.get('class', '') == '1' and p.get('confidence', 0) > self.confidence_thresholds['light']]
         
         print(f"\n🔍 Frame {frame_num}:")
@@ -239,7 +242,7 @@ class SimplifiedTrafficViolationDetector:
         print(f"   Triple riding (people) detections: {len(triple_detections)}")
         print(f"   Red light (class=1) detections: {len(red_light_detections)}")
         
-        # Get ONE plate number for this frame (prefer actual plate over generated ID)
+        # Get ONE plate number for this frame
         plate_img, plate_number = None, None
         if bikes:
             plate_img, plate_number = self.extract_license_plate(frame, bikes[0])
@@ -249,7 +252,6 @@ class SimplifiedTrafficViolationDetector:
         # Check for NO HELMET violation - ONE per frame
         if no_helmet_detections:
             best_no_helmet = max(no_helmet_detections, key=lambda x: x.get('confidence', 0))
-            
             violation = {
                 'type': 'NO_HELMET',
                 'frame': frame_num,
@@ -266,7 +268,6 @@ class SimplifiedTrafficViolationDetector:
         # Check for TRIPLE RIDING - ONE per frame
         if triple_detections:
             best_triple = max(triple_detections, key=lambda x: x.get('confidence', 0))
-            
             violation = {
                 'type': 'TRIPLE_RIDING',
                 'frame': frame_num,
@@ -283,7 +284,6 @@ class SimplifiedTrafficViolationDetector:
         # Check for RED LIGHT violation - ONE per frame
         if red_light_detections and bikes:
             best_red_light = max(red_light_detections, key=lambda x: x.get('confidence', 0))
-            
             violation = {
                 'type': 'RED_LIGHT_VIOLATION',
                 'frame': frame_num,
@@ -409,25 +409,25 @@ class SimplifiedTrafficViolationDetector:
             
             # Color based on class
             if 'no' in cls_lower and 'helmet' in cls_lower:
-                color = (0, 0, 255)  # Red for no helmet
+                color = (0, 0, 255)
                 display_label = f"No Helmet: {conf:.2f}"
             elif 'helmet' in cls_lower:
-                color = (0, 255, 0)  # Green for helmet
+                color = (0, 255, 0)
                 display_label = f"{cls}: {conf:.2f}"
-            elif cls_lower == 'people':  # Triple riding detection
-                color = (255, 0, 255)  # Magenta for more than 2 passengers
+            elif cls_lower == 'people':
+                color = (255, 0, 255)
                 display_label = f"3+ Passengers: {conf:.2f}"
-            elif cls == '1':  # Red light
-                color = (0, 0, 255)  # Red for red light
+            elif cls == '1':
+                color = (0, 0, 255)
                 display_label = f"Red Light: {conf:.2f}"
-            elif cls == '0':  # Green light
-                color = (0, 255, 0)  # Green for green light
+            elif cls == '0':
+                color = (0, 255, 0)
                 display_label = f"Green Light: {conf:.2f}"
             elif 'bike' in cls_lower or 'motorcycle' in cls_lower or 'two' in cls_lower:
-                color = (255, 255, 0)  # Yellow for bikes
+                color = (255, 255, 0)
                 display_label = f"{cls}: {conf:.2f}"
             else:
-                color = (128, 128, 128)  # Gray for others
+                color = (128, 128, 128)
                 display_label = f"{cls}: {conf:.2f}"
             
             cv2.rectangle(annotated_frame, (x - w // 2, y - h // 2), (x + w // 2, y + h // 2), color, 2)
@@ -495,13 +495,11 @@ class SimplifiedTrafficViolationDetector:
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT) or 0)
         duration = total_frames / original_fps if original_fps > 0 else 0.0
 
-        # Process every 3rd frame
         frame_skip = 3
 
         print(f"📊 Video info: {total_frames} frames, {original_fps:.1f} FPS, {duration:.1f}s")
         print(f"⚙️ Processing every {frame_skip} frames")
 
-        # VideoWriter setup
         vwf = getattr(cv2, 'VideoWriter_fourcc', None)
         fourcc = 0
         if vwf is not None:
@@ -529,13 +527,11 @@ class SimplifiedTrafficViolationDetector:
                 if not ret:
                     break
 
-                # Process every Nth frame
                 if frame_num % frame_skip == 0:
                     timestamp = frame_num / original_fps if original_fps > 0 else 0.0
                     annotated_frame, violations = self.detect_on_frame(frame, frame_num, timestamp)
                     out.write(annotated_frame)
 
-                    # Save violations
                     for v in violations:
                         plate = v.get('plate_number', 'UNKNOWN')
                         vtype = v.get('type', 'VIOLATION')
@@ -604,7 +600,7 @@ class SimplifiedTrafficViolationDetector:
 # Main execution
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description="Fixed Traffic Violation Detector")
+    parser = argparse.ArgumentParser(description="Traffic Violation Detector - Tesseract Only")
     parser.add_argument('--video', help='Path to input video')
     parser.add_argument('--image', help='Path to input image')
     parser.add_argument('--out', help='Output path', default=None)
