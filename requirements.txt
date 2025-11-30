@@ -2,8 +2,10 @@ Flask==3.0.0
 opencv-python-headless==4.10.0.84
 numpy==1.26.4
 pytesseract==0.3.10
-easyocr==1.7.1
 inference-sdk==0.9.15
 Werkzeug==3.0.1
 Pillow==10.1.0
-requests==2.31.0
+--index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+easyocr==1.7.1
