@@ -2,6 +2,6 @@ flask==3.0.0
 werkzeug==3.0.1
 opencv-python==4.8.1.78
 pytesseract==0.3.10
-numpy==1.24.3
+numpy==1.26.4
 pillow==10.1.0
 inference-sdk==0.9.0
